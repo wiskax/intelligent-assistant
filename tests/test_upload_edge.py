@@ -19,7 +19,7 @@ def upload_doc_ids(auth_headers):
     yield doc_ids
     # 清理上传的文档
     for doc_id in doc_ids:
-        requests.delete(f"{BASE_URL}/api/v1/documents/{doc_id}", headers=auth_headers)
+        resp = requests.delete(f"{BASE_URL}/api/v1/documents/{doc_id}", headers=auth_headers)
         print(f"\n🧹 清理文档 id={doc_id}，状态码={resp.status_code}")
 
 def test_upload_kong_token(auth_headers):
