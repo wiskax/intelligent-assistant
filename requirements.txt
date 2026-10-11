@@ -26,3 +26,4 @@ numpy
 beautifulsoup4
 lxml
 pypdf==5.1.0
+python-multipart
