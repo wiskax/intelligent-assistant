@@ -49,6 +49,11 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install pytest requests email-validator
+      - name: 安装依赖
+        run: |
+          pip install -r requirements.txt
+          pip install pytest requests email-validator
+          pip install langchain-community langchain-text-splitters
       - name: 注册测试用户
         run: |
           curl -X POST http://localhost:8000/api/v1/auth/register \
