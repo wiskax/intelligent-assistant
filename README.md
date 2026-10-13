@@ -3,6 +3,7 @@
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.115+-teal.svg)](https://fastapi.tiangolo.com/)
 [![LangChain](https://img.shields.io/badge/LangChain-0.3+-green.svg)](https://github.com/langchain-ai/langchain)
+[![Run Tests](https://github.com/wiskax/intelligent-assistant/actions/workflows/test.yml/badge.svg)](https://github.com/wiskax/intelligent-assistant/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 > 一个基于 **RAG（检索增强生成）** 技术的智能知识库助手，支持用户上传文档、自动向量化存储、语义检索和智能问答。系统采用 **混合检索（BM25 + 向量检索）** 技术，提供更精准的答案。
@@ -19,6 +20,8 @@
 - 👤 **多用户隔离**：每个用户的文档和对话完全隔离
 - 🔐 **JWT 认证**：安全的用户注册/登录系统
 - 🌊 **流式前端**：打字机效果，实时展示回答生成过程
+- 🧪 **接口自动化测试**：pytest 覆盖认证、文档、上传等核心接口
+- ⚙️ **持续集成**：GitHub Actions 自动跑测试
 - 🐳 **一键部署**：支持 Docker Compose 快速启动
 
 ---
@@ -34,44 +37,37 @@
 | **LLM 接口** | 智谱AI (ChatGLM) / 兼容 OpenAI API |
 | **检索算法** | BM25 + 向量语义检索 (混合检索) |
 | **认证** | JWT (python-jose) |
+| **测试** | pytest, requests |
+| **CI/CD** | GitHub Actions |
 | **前端** | HTML + CSS + JavaScript (原生) |
 | **部署** | Docker, Docker Compose |
 
 ---
 
-## 📊 系统架构图
-┌─────────────────────────────────────────────────────────────────┐
-│ 用户浏览器 │
-│ (templates/index.html) │
-└─────────────────────────┬───────────────────────────────────────┘
-│ WebSocket / HTTP
-┌─────────────────────────▼───────────────────────────────────────┐
+## 📊 系统架构
+用户浏览器 (templates/index.html)
+│
+▼ WebSocket / HTTP
+┌──────────────────────────────────────┐
 │ FastAPI 后端 │
-│ ┌──────────────┐ ┌──────────────┐ ┌──────────────────────┐ │
-│ │ Auth API │ │ Documents │ │ Chat API │ │
-│ │ 注册/登录/JWT │ │ 上传/列表 │ │ RAG 智能问答 │ │
-│ └──────────────┘ └──────────────┘ └──────────────────────┘ │
-└─────────────────────────┬───────────────────────────────────────┘
+│ ┌──────────┐ ┌──────────┐ ┌────────┐│
+│ │ Auth API │ │Documents │ │Chat API││
+│ └──────────┘ └──────────┘ └────────┘│
+└──────────────────────────────────────┘
 │
-┌─────────────────────────▼───────────────────────────────────────┐
+▼
+┌──────────────────────────────────────┐
 │ 业务服务层 │
-│ ┌──────────────────┐ ┌──────────────────────────────────┐ │
-│ │ Auth Service │ │ Document Service │ │
-│ │ 密码加密/JWT │ │ 文档记录/状态管理 │ │
-│ └──────────────────┘ └──────────────────────────────────┘ │
-│ ┌──────────────────────────────────────────────────────────┐ │
-│ │ Vector Service (向量服务) │ │
-│ │ 文档加载 → 切分 → 向量化 → 存储 → 检索 │ │
-│ └──────────────────────────────────────────────────────────┘ │
-└─────────────────────────┬───────────────────────────────────────┘
+│ Auth Service / Document Service │
+│ Vector Service (加载→切分→向量化→检索)│
+└──────────────────────────────────────┘
 │
-┌─────────────────────────▼───────────────────────────────────────┐
+▼
+┌──────────────────────────────────────┐
 │ 数据存储层 │
-│ ┌─────────────┐ ┌─────────────┐ ┌──────────────────────┐ │
-│ │ PostgreSQL │ │ ChromaDB │ │ Uploads │ │
-│ │ 用户/文档 │ │ 向量索引 │ │ 原始文件 │ │
-│ └─────────────┘ └─────────────┘ └──────────────────────┘ │
-└─────────────────────────────────────────────────────────────────┘
+│ PostgreSQL / ChromaDB / Uploads │
+└──────────────────────────────────────┘
+
 ---
 
 ## 🚀 快速开始
@@ -82,33 +78,23 @@
 - Docker (用于 PostgreSQL)
 - 智谱AI API Key
 
-### 1️⃣ 克隆项目
-
-```bash
+### 1️、克隆项目
+```bash 
 git clone https://github.com/wiskax/intelligent-assistant.git
 cd intelligent-assistant
-
----创建虚拟环境
+2️、 创建虚拟环境
 python -m venv .venv
 source .venv/bin/activate  # Windows: .venv\Scripts\activate
-
----安装依赖
+3️、 安装依赖
 pip install -r requirements.txt
-
----配置环境变量
-创建.env文件：
-# 数据库
+4️、 配置环境变量
+创建 .env 文件：
 DATABASE_URL=postgresql+asyncpg://postgres:postgres@localhost:5432/intelligent_assistant
-
-# JWT
 SECRET_KEY=your-secret-key-change-in-production
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=30
-
-# LLM (智谱AI)
 ZHIPU_API_KEY=your_zhipu_api_key_here
-
----启动postgreSQL(Docker)
+5️、 启动 PostgreSQL (Docker)
 docker run -d \
   --name postgres-dev \
   -e POSTGRES_USER=postgres \
@@ -117,14 +103,12 @@ docker run -d \
   -p 5432:5432 \
   --restart always \
   postgres:15
+6️、 启动服务
+uvicorn app.main:app --reload --port 8000
+7️、 访问系统
+打开浏览器访问 http://localhost:8000
 
-  ---启动服务
-  uvicorn app.main:app --reload --port 8000
-
-  ---访问系统
-  打开浏览器访问 http://localhost:8000
-
-  📖 使用指南
+📖 使用指南
 注册与登录
 打开 http://localhost:8000
 
@@ -158,8 +142,29 @@ docker run -d \
 /api/v1/documents/	GET	获取文档列表（需认证）
 /api/v1/chat/ask	POST	RAG 问答（需认证）
 /api/v1/system/status	GET	系统状态（需认证）
+🧪 测试
+项目使用 pytest 编写了完整的接口自动化测试，覆盖认证、文档管理、文件上传等核心功能。
 
-项目结构
+测试覆盖
+测试文件	覆盖内容
+test_auth_api.py	登录成功、密码错误、无 Token 访问被拒绝
+test_protected_api.py	带 Token 访问受保护接口、返回格式校验
+test_upload_api.py	带/不带 Token 上传文件
+test_upload_edge.py	空文件、不支持类型、缺少文件等边界情况
+运行测试
+pytest tests/ -v
+持续集成
+项目配置了 GitHub Actions，每次 push 代码会自动：
+
+启动 PostgreSQL 服务
+
+安装依赖
+
+启动 FastAPI 服务
+
+运行全部测试
+
+📂 项目结构
 intelligent_assistant/
 ├── app/
 │   ├── api/                    # API 路由
@@ -172,20 +177,20 @@ intelligent_assistant/
 │   │   ├── loader.py          # 数据加载器
 │   │   └── retriever.py       # 混合检索器
 │   ├── models/                 # 数据模型
-│   │   ├── user.py            # 用户模型
-│   │   └── document.py        # 文档模型
 │   ├── schemas/                # Pydantic 模型
-│   │   ├── user.py            # 用户 Schemas
-│   │   └── document.py        # 文档 Schemas
 │   ├── services/               # 业务逻辑
-│   │   ├── auth_service.py    # 认证服务
-│   │   ├── document_service.py # 文档服务
-│   │   └── vector_service.py  # 向量服务
 │   ├── config.py              # 配置管理
 │   ├── dependencies.py        # 依赖注入
 │   └── main.py                # 应用入口
+├── tests/                      # 测试目录
+│   ├── test_auth_api.py
+│   ├── test_protected_api.py
+│   ├── test_upload_api.py
+│   └── test_upload_edge.py
 ├── templates/
 │   └── index.html             # 前端页面
+├── .github/workflows/
+│   └── test.yml               # CI 配置
 ├── chroma_db/                  # 向量数据库
 ├── uploads/                    # 上传文件存储
 ├── .env                       # 环境变量
@@ -193,7 +198,6 @@ intelligent_assistant/
 ├── requirements.txt           # Python 依赖
 ├── cleanup.py                 # 数据清理工具
 └── README.md                  # 项目文档
-
 🧹 数据清理
 python cleanup.py
 菜单选项：
@@ -211,7 +215,6 @@ python cleanup.py
 🐳 Docker 部署
 构建镜像
 docker build -t intelligent-assistant .
-
 启动服务
 docker-compose up -d
 ⚙️ 配置说明
@@ -222,7 +225,6 @@ ALGORITHM	JWT 算法	HS256
 ACCESS_TOKEN_EXPIRE_MINUTES	Token 过期时间	30
 ZHIPU_API_KEY	智谱AI API Key	必填
 CHROMA_PERSIST_DIR	向量数据库路径	./chroma_db
-
 🔧 常见问题
 Q: 上传文档后提示"文档处理失败"？
 A: 检查文件编码是否为 UTF-8，或文件内容是否为空。
@@ -232,6 +234,9 @@ A: 确保已上传文档，且文档内容与问题相关。
 
 Q: 重启服务后数据丢失？
 A: 检查 chroma_db 目录是否存在，并确保路径配置正确。
+
+Q: CI 报缺少某个依赖？
+A: 把缺失的包加到 requirements.txt 里，重新 push 即可。
 
 📄 License
 MIT License
@@ -246,5 +251,3 @@ ChromaDB
 智谱AI
 
 如果这个项目对你有帮助，欢迎 Star ⭐！
-
-本人邮箱：1054422081@qq.com
