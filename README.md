@@ -43,6 +43,37 @@
 | **部署** | Docker, Docker Compose |
 
 ---
+## 🧪 测试
+
+项目使用 pytest 编写了完整的自动化测试，覆盖接口测试和 UI 测试，共 12 个测试用例。
+
+### 测试覆盖
+
+| 测试文件 | 覆盖内容 | 用例数 |
+|----------|----------|--------|
+| `test_auth_api.py` | 登录成功、密码错误、无 Token 访问被拒绝 | 3 |
+| `test_protected_api.py` | 带 Token 访问受保护接口、返回格式校验 | 2 |
+| `test_upload_api.py` | 带/不带 Token 上传文件 | 2 |
+| `test_upload_edge.py` | 空文件、不支持类型、缺少文件等边界情况 | 3 |
+| `test_ui.py` | 页面加载、标题校验 | 1 |
+| `test_ui_flow.py` | 模拟用户登录流程 | 1 |
+
+### 测试技术
+
+- **接口测试**：pytest + requests，覆盖认证、CRUD、边界情况
+- **UI 测试**：Playwright，模拟真实用户操作
+- **Fixture 管理**：conftest.py 统一管理登录态、请求头
+- **自动启停服务**：测试启动时自动拉起 Uvicorn，跑完自动关闭
+- **测试报告**：Allure 生成可视化报告
+- **CI/CD**：GitHub Actions 每次 push 自动跑测试
+
+### 运行测试
+```bash
+pytest tests/ -v
+
+### 测试报告
+![测试报告](docs/imgs/test_report.png)
+
 
 ## 📊 系统架构
 用户浏览器 (templates/index.html)

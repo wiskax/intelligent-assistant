@@ -1,18 +1,6 @@
 import pytest
 import requests
 BASE_URL = "http://localhost:8000"
-@pytest.fixture(scope="session")
-def token():
-    """先获取token"""
-    resp= requests.post(f"{BASE_URL}/api/v1/auth/login", json={
-        "username": "testuser",
-        "password": "123456"
-    })
-    return resp.json()["access_token"]
-@pytest.fixture
-def auth_headers(token):
-    """返回带token的请求头"""
-    return {"Authorization": f"Bearer {token}"}
 @pytest.fixture
 def upload_doc_ids(auth_headers):
     doc_ids = []
